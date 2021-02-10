@@ -1,4 +1,22 @@
- steps:
-  # running docker-compose
-  - name: 'docker/compose'
+  steps:
+ # Build the container image
+    - name: 'docker/compose'
     args: ['up', '-d']
+ # Push the container image to Container Registry
+ - name: 'gcr.io/cloud-builders/docker'
+   args: ['push', 'gcr.io/$PROJECT_ID/shangrilaopenproject:$COMMIT_SHA']
+ # Deploy container image to Cloud Run
+ - name: 'gcr.io/google.com/cloudsdktool/cloud-sdk'
+   entrypoint: gcloud
+   args:
+   - 'run'
+   - 'deploy'
+   - 'shangrilaopenproject'
+   - '--image'
+   - 'gcr.io/$PROJECT_ID/shangrilaopenproject:$COMMIT_SHA'
+   - '--region'
+   - 'REGION'
+   - '--platform'
+   - 'managed'
+ images:
+ - 'gcr.io/$PROJECT_ID/shangrilaopenproject:$COMMIT_SHA'
